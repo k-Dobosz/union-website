@@ -43,16 +43,23 @@ export class Prescriptions extends React.Component {
             });
     };
 
-    addReceipt = () => {
+    addPrescription = () => {
         const user = JSON.parse(localStorage.getItem('currentUser'));
         const patient = JSON.parse(localStorage.getItem('currentPatient'));
         const institution = JSON.parse(localStorage.getItem('currentInstitution'));
 
         fetch(`${Config.url}prescription/add`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + user.token, 'Content-Type': 'application/json' }, body: JSON.stringify({ doctorId: user.userId, patientId: patient.patientId, institutionId: institution.id }) })
             .then(authentication.handleResponse)
-            .then(({ data }) => {
-                console.log(data);
-                fetch(``)
+            .then((data) => {
+                const prescriptionId = data.insertId;
+
+                this.state.added_medicines.forEach((medicine, index) => {
+                    fetch(`${Config.url}prescription/${prescriptionId}/medicines/add`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + user.token, 'Content-Type': 'application/json' }, body: JSON.stringify({ medicineId: medicine.name, taking_frequency: medicine.taking_frequency })})
+                        .then(authentication.handleResponse)
+                        .then((data) => {
+                            console.log(data)
+                        });
+                });
             });
     };
 
@@ -60,7 +67,6 @@ export class Prescriptions extends React.Component {
         let data = this.state.added_medicines;
         data.push({ name: this.state.name, taking_frequency: this.state.taking_frequency});
         this.setState({ addedMedicines: data, name: '', taking_frequency: ''});
-        console.log(this.state.added_medicines);
     };
 
     handleChange = (e) => {
@@ -101,7 +107,7 @@ export class Prescriptions extends React.Component {
                                         Dodawanie recepty
                                     </div>
                                 </div>
-                                <button id="receptionAdd-button" style={{float: 'right'}} onClick={this.addReceipt}>Utwórz</button>
+                                <button id="receptionAdd-button" style={{float: 'right'}} onClick={this.addPrescription}>Utwórz</button>
                             </div>
                             <div className="content-inside-reception-bottom-addPrescription">
                                 <div className="content-inside-reception-bottom-text">
